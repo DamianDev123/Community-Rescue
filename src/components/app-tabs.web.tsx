@@ -1,19 +1,12 @@
-import {
-  Tabs,
-  TabList,
-  TabTrigger,
-  TabSlot,
-  TabTriggerSlotProps,
-  TabListProps,
-} from 'expo-router/ui';
-import { SymbolView } from 'expo-symbols';
-import { Pressable, useColorScheme, View, StyleSheet } from 'react-native';
+import { Tabs, TabList, TabTrigger, TabSlot, TabTriggerSlotProps, TabListProps } from 'expo-router/ui';
+import { Linking, Pressable, View, StyleSheet } from 'react-native';
 
-import { ExternalLink } from './external-link';
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
 
-import { Colors, MaxContentWidth, Spacing } from '@/constants/theme';
+import { EMERGENCY_PHONE } from '@/data/facilities';
+import { CardShadow, MaxContentWidth, Radius, SemanticColors, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function AppTabs() {
   return (
@@ -24,8 +17,14 @@ export default function AppTabs() {
           <TabTrigger name="home" href="/" asChild>
             <TabButton>Home</TabButton>
           </TabTrigger>
-          <TabTrigger name="explore" href="/explore" asChild>
-            <TabButton>Explore</TabButton>
+          <TabTrigger name="care" href="/care" asChild>
+            <TabButton>Care</TabButton>
+          </TabTrigger>
+          <TabTrigger name="first-aid" href="/first-aid" asChild>
+            <TabButton>First Aid</TabButton>
+          </TabTrigger>
+          <TabTrigger name="resources" href="/resources" asChild>
+            <TabButton>Resources</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
@@ -39,7 +38,7 @@ export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps
       <ThemedView
         type={isFocused ? 'backgroundSelected' : 'backgroundElement'}
         style={styles.tabButtonView}>
-        <ThemedText type="small" themeColor={isFocused ? 'text' : 'textSecondary'}>
+        <ThemedText type="small" themeColor={isFocused ? 'primary' : 'textSecondary'}>
           {children}
         </ThemedText>
       </ThemedView>
@@ -48,28 +47,23 @@ export function TabButton({ children, isFocused, ...props }: TabTriggerSlotProps
 }
 
 export function CustomTabList(props: TabListProps) {
-  const scheme = useColorScheme();
-  const colors = Colors[scheme === 'unspecified' ? 'light' : scheme];
-
+  const theme = useTheme();
   return (
     <View {...props} style={styles.tabListContainer}>
-      <ThemedView type="backgroundElement" style={styles.innerContainer}>
+      <ThemedView
+        type="backgroundElement"
+        style={[styles.innerContainer, CardShadow, { borderColor: theme.border }]}>
         <ThemedText type="smallBold" style={styles.brandText}>
-          Expo Starter
+          CRM
         </ThemedText>
 
         {props.children}
 
-        <ExternalLink href="https://docs.expo.dev" asChild>
-          <Pressable style={styles.externalPressable}>
-            <ThemedText type="link">Docs</ThemedText>
-            <SymbolView
-              tintColor={colors.text}
-              name={{ ios: 'arrow.up.right.square', web: 'link' }}
-              size={12}
-            />
-          </Pressable>
-        </ExternalLink>
+        <Pressable onPress={() => Linking.openURL(`tel:${EMERGENCY_PHONE}`)} style={styles.emergencyPressable}>
+          <ThemedText type="smallBold" style={styles.emergencyText}>
+            Call 911
+          </ThemedText>
+        </Pressable>
       </ThemedView>
     </View>
   );
@@ -87,7 +81,8 @@ const styles = StyleSheet.create({
   innerContainer: {
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.five,
-    borderRadius: Spacing.five,
+    borderRadius: Radius.pill,
+    borderWidth: StyleSheet.hairlineWidth,
     flexDirection: 'row',
     alignItems: 'center',
     flexGrow: 1,
@@ -103,13 +98,16 @@ const styles = StyleSheet.create({
   tabButtonView: {
     paddingVertical: Spacing.one,
     paddingHorizontal: Spacing.three,
-    borderRadius: Spacing.three,
+    borderRadius: Radius.medium,
   },
-  externalPressable: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: Spacing.one,
+  emergencyPressable: {
     marginLeft: Spacing.three,
+    backgroundColor: SemanticColors.danger,
+    borderRadius: Radius.pill,
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.three,
+  },
+  emergencyText: {
+    color: SemanticColors.onColor,
   },
 });
